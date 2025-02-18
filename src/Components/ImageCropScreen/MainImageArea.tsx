@@ -10,7 +10,7 @@ type Props = {
   imgSrc: string;
   scale: number;
   rotate: number;
-  imgRef: RefObject<HTMLImageElement> | null;
+  imgRef: RefObject<HTMLImageElement | null>;
   updateCompletedCrop: (c: PixelCrop) => void;
 };
 
@@ -52,7 +52,7 @@ const MainImageArea: FC<Props> = ({
   }
 
   return (
-    <div className="w-[80%] p-8">
+    <div className="flex-1 p-8 overflow-y-auto">
       <ReactCrop
         crop={crop}
         onChange={(_, percentCrop) => setCrop(percentCrop)}
