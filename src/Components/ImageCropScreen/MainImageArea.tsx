@@ -1,4 +1,4 @@
-import { FC, useRef, useState } from "react";
+import { FC, RefObject, useState } from "react";
 import ReactCrop, {
   centerCrop,
   makeAspectCrop,
@@ -10,6 +10,8 @@ type Props = {
   imgSrc: string;
   scale: number;
   rotate: number;
+  imgRef: RefObject<HTMLImageElement> | null;
+  updateCompletedCrop: (c: PixelCrop) => void;
 };
 
 function centerAspectCrop(
@@ -32,11 +34,15 @@ function centerAspectCrop(
   );
 }
 
-const MainImageArea: FC<Props> = ({ imgSrc, scale, rotate }) => {
+const MainImageArea: FC<Props> = ({
+  imgSrc,
+  scale,
+  rotate,
+  imgRef,
+  updateCompletedCrop,
+}) => {
   const [crop, setCrop] = useState<Crop>();
-  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [aspect] = useState<number | undefined>(16 / 9);
-  const imgRef = useRef<HTMLImageElement>(null);
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     if (aspect) {
@@ -50,7 +56,7 @@ const MainImageArea: FC<Props> = ({ imgSrc, scale, rotate }) => {
       <ReactCrop
         crop={crop}
         onChange={(_, percentCrop) => setCrop(percentCrop)}
-        onComplete={(c) => setCompletedCrop(c)}
+        onComplete={(c) => updateCompletedCrop(c)}
         aspect={aspect}
         minHeight={100}
       >

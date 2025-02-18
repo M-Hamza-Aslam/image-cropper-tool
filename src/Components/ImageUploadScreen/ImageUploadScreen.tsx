@@ -22,9 +22,9 @@ const ImageUploadScreen: FC<Props> = ({ saveImage }) => {
   });
 
   return (
-    <div>
-      <h1>Crop Image</h1>
-      <p>Crop JPG or PNG image</p>
+    <div className="flex flex-col justify-center items-center h-[100vh]">
+      <h1 className="font-bold">Crop IMAGE</h1>
+      <p className="mb-10 mt-2">Crop JPG or PNG image</p>
       <div className="card">
         {/*begin::Dropzone*/}
         <div
@@ -33,7 +33,7 @@ const ImageUploadScreen: FC<Props> = ({ saveImage }) => {
           })}
         >
           <input {...getInputProps()} />
-          <div className="dz-message cursor-pointer needsclick text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2">
+          <div className="dz-message cursor-pointer needsclick text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-bold rounded-lg text-sm px-15 py-8 me-2 mb-2">
             <h5 className="fw-bold mb-0">
               Drop image here or click to upload.
             </h5>

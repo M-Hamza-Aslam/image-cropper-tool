@@ -1,20 +1,75 @@
-import { FC } from "react";
+import { FC, RefObject, useRef } from "react";
+import { PixelCrop } from "react-image-crop";
 
 type Props = {
   scale: number;
-  updateScale: (value: number) => void;
   rotate: number;
+  imgRef: RefObject<HTMLImageElement> | null;
+  completedCrop: PixelCrop | undefined;
+  updateScale: (value: number) => void;
   updateRotate: (value: number) => void;
   clearImgSrc: () => void;
 };
 
 const Sidebar: FC<Props> = ({
   scale,
-  updateScale,
   rotate,
+  imgRef,
+  completedCrop,
+  updateScale,
   updateRotate,
   clearImgSrc,
 }) => {
+  const blobUrlRef = useRef("");
+  const hiddenAnchorRef = useRef<HTMLAnchorElement>(null);
+
+  async function onDownloadCropClick() {
+    const image = imgRef?.current;
+    if (!image || !completedCrop) {
+      throw new Error("Crop data does not exist");
+    }
+
+    // Scale factors based on the original image size
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+
+    // Create an offscreen canvas
+    const offscreen = new OffscreenCanvas(
+      completedCrop.width * scaleX,
+      completedCrop.height * scaleY
+    );
+    const ctx = offscreen.getContext("2d");
+    if (!ctx) {
+      throw new Error("No 2d context");
+    }
+
+    // Draw the cropped portion of the image
+    ctx.drawImage(
+      image,
+      completedCrop.x * scaleX, // Source X
+      completedCrop.y * scaleY, // Source Y
+      completedCrop.width * scaleX, // Source Width
+      completedCrop.height * scaleY, // Source Height
+      0, // Destination X
+      0, // Destination Y
+      offscreen.width, // Destination Width
+      offscreen.height // Destination Height
+    );
+
+    // Convert canvas to blob
+    const blob = await offscreen.convertToBlob({ type: "image/png" });
+
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+    }
+    blobUrlRef.current = URL.createObjectURL(blob);
+
+    if (hiddenAnchorRef.current) {
+      hiddenAnchorRef.current.href = blobUrlRef.current;
+      hiddenAnchorRef.current.click();
+    }
+  }
+
   return (
     <div className="w-[20%] border-s bg-white flex flex-col justify-between">
       <div>
@@ -46,7 +101,10 @@ const Sidebar: FC<Props> = ({
         </div>
       </div>
       <div className="mx-4">
-        <button className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2">
+        <button
+          onClick={onDownloadCropClick}
+          className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2"
+        >
           Download Cropped Image
         </button>
         <button
@@ -55,6 +113,18 @@ const Sidebar: FC<Props> = ({
         >
           Back
         </button>
+        <a
+          href="#hidden"
+          ref={hiddenAnchorRef}
+          download
+          style={{
+            position: "absolute",
+            top: "-200vh",
+            visibility: "hidden",
+          }}
+        >
+          Hidden download
+        </a>
       </div>
     </div>
   );
